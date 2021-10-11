@@ -42,6 +42,8 @@ int main(int argc, char **argv) {
   int numSets = atoi(argv[1]);
   int numBlocks = atoi(argv[2]);
   int numBytes = atoi(argv[3]);
+
+  //check for argv[4 - 6]
   
   return 0;
 }
