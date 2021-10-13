@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <string.h>
 
 using std::cerr;
 using std::isdigit;
@@ -17,7 +18,6 @@ using std::isdigit;
   5- write-through or write-back
   6- lru (least recently used) or fifo evictions
 */
-
 
 int main(int argc, char **argv) {
 
@@ -42,8 +42,27 @@ int main(int argc, char **argv) {
   int numSets = atoi(argv[1]);
   int numBlocks = atoi(argv[2]);
   int numBytes = atoi(argv[3]);
-
+  
+  //checkTextArgs(); //add function to break up main
+  
   //check for argv[4 - 6]
+  if ((strcmp("write-allocate", argv[4]) != 0) && (strcmp("no-write-allocate", argv[4]) != 0)) {
+      cerr << "Invalid Input: 4th argument is invalid\n";
+      exit(1);
+  }
+
+  if ((strcmp("write-through", argv[5]) !=0) && (strcmp("write-back", argv[5]) != 0)) {
+      cerr << "Invalid Input: 5th argument is invalid\n";
+      exit(1);
+  }
+
+  if ((strcmp("lru", argv[6]) !=0) && (strcmp("fifo", argv[6]) != 0)) {
+      cerr << "Invalid Input: 5th argument is invalid - must be lru or  fifo\n";
+      exit(1);
+  }
+
+  //file check
+
   
   return 0;
 }
