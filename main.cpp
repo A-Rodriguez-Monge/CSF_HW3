@@ -45,18 +45,11 @@ int main(int argc, char **argv) {
   int numBytes = atoi(argv[3]);
   
   //checkTextArgs(); //add function to break up main
-  /*std::string file_name; //check file name, need to fix
-  std::cin >> file_name;
-
-  std::ifstream ifile;
-  ifile.open(file_name);
-  if(ifile) {
-    std::cout<<"file exists";
-  } else {
-    std::cout<<"file doesn't exist";
-  }
-  */
-    
+  //check file name, need to fix : bytes are within sets are within your cache
+  //struct within a struct
+  //make a function within a struct just adding 100 cycles and not doing anything else
+  //not accessing gcc.trace, piping will automatically 
+      
   //check for argv[4 - 6]
   if ((strcmp("write-allocate", argv[4]) != 0) && (strcmp("no-write-allocate", argv[4]) != 0)) {
       cerr << "Invalid Input: 4th argument is invalid\n";
