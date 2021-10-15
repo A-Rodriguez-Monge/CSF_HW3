@@ -11,8 +11,10 @@ using std::isdigit;
 
 int checkArgs(int argc, char **argv) {
 
+  //CHECK FOR DIRECT MAPPING (6 ARGS ONLY)
+  
   //check num args
-  if (argc != 7) {
+  if (argc != 7 || argc != 6) {
     cerr << "Invalid Input: Incorrect Number of Arguments\n";
     exit(1);
   }
