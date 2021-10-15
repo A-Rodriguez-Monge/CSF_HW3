@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
+#include "Helper.h"
 
 using std::cerr;
 using std::isdigit;
@@ -22,24 +23,13 @@ using std::isdigit;
 
 int main(int argc, char **argv) {
 
-  //check numb args
-  if (argc != 7) {
-    cerr << "Invalid Input: Incorrect Number of Arguments\n";
+  int result = checkArgs(argc, argv);
+
+  if (result != 0) {
+    cerr << "Invalid Command Line Argument(s)";
     exit(1);
   }
   
-  for (int i = 1; i < 4; i++) {
-    if((isdigit(argv[i] != 0) || (atoi(argv[i]) <= 0))) {
-      cerr << "Invalid Input: values must be positive\n";
-      exit(1);
-    }
-    
-    if ((i == 3) && (atoi(argv[i]) < 4)) {
-      cerr << "Invalid Input: number of bytes must be at least 4\n";
-      exit(1);
-    }
-  }
-
   int numSets = atoi(argv[1]);
   int numBlocks = atoi(argv[2]);
   int numBytes = atoi(argv[3]);
@@ -49,25 +39,6 @@ int main(int argc, char **argv) {
   //struct within a struct
   //make a function within a struct just adding 100 cycles and not doing anything else
   //not accessing gcc.trace, piping will automatically 
-      
-  //check for argv[4 - 6]
-  if ((strcmp("write-allocate", argv[4]) != 0) && (strcmp("no-write-allocate", argv[4]) != 0)) {
-      cerr << "Invalid Input: 4th argument is invalid\n";
-      exit(1);
-  }
-
-  if ((strcmp("write-through", argv[5]) !=0) && (strcmp("write-back", argv[5]) != 0)) {
-      cerr << "Invalid Input: 5th argument is invalid\n";
-      exit(1);
-  }
-
-  if ((strcmp("lru", argv[6]) !=0) && (strcmp("fifo", argv[6]) != 0)) {
-      cerr << "Invalid Input: 5th argument is invalid - must be lru or  fifo\n";
-      exit(1);
-  }
-
-  //file check
-
   
   return 0;
 }
