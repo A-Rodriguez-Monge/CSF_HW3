@@ -11,14 +11,12 @@ using std::isdigit;
 
 int checkArgs(int argc, char **argv) {
 
-  //CHECK FOR DIRECT MAPPING (6 ARGS ONLY)
-  
-  //check num args
-  if (argc != 7 || argc != 6) {
+  //check number of args
+  if (argc != 7) {
     cerr << "Invalid Input: Incorrect Number of Arguments\n";
     exit(1);
   }
-
+  
   //check args 1-4
   for (int i = 1; i < 4; i++) {
     if((isdigit(argv[i] != 0) || (atoi(argv[i]) <= 0))) {
