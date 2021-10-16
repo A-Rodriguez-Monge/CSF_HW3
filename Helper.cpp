@@ -8,6 +8,7 @@
 
 using std::cerr;
 using std::isdigit;
+using std::cin;
 
 int checkArgs(int argc, char **argv) {
 
@@ -64,3 +65,28 @@ int checkArgs(int argc, char **argv) {
   return 0;
 
 }
+
+int readLine(Cache* cache, char* action, char* address){
+  std::string store;
+  cin>>action;
+  //std::cout<<action<<" ";
+  /*while (true){
+    cin>>action;
+    std::cout<<action<<"\n";
+  }
+  */
+
+  if (strcmp(action, "l") == 0 || strcmp(action, "s") == 0){
+    //  cin>>action;
+    cin>>address;
+    cin>>store;
+    std::cout<<action<<" "<<address<<" "<<store<<"\n";
+    return 1;
+  }
+  return EOF;
+  
+}
+
+
+
+
