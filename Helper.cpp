@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
+#include <cstring>
 #include "Helper.h"
 
 using std::cerr;
@@ -66,27 +67,80 @@ int checkArgs(int argc, char **argv) {
 
 }
 
-int readLine(Cache* cache, char* action, char* address){
+int readLine(Cache* cache){//, char *action, char* address){
+
+  printf("total hits: %d\n", cache->loadHits);
+  
+  std::string curLine;
+  getline(cin, curLine);
+
+  if (curLine.empty()) {
+    return EOF;
+  }
+
+  char cur[curLine.length() + 1];
+  strcpy(cur, curLine.c_str());
+
+  char *action = strtok(cur, " ");
+  char *address = strtok(NULL, " ");
+  
+  std::cout<<*action<<" "<<address<<"\n";
+
+  hitOrMiss(cache, action, address);
+  
+  return 0;
+  
+  /*
   std::string store;
+
+  getline(cin, store);
+  
+  if (store.empty()) {
+    printf("EMPTY\n");
+    return -1;
+  }
+  
   cin>>action;
   //std::cout<<action<<" ";
   /*while (true){
     cin>>action;
     std::cout<<action<<"\n";
   }
-  */
+  
 
   if (strcmp(action, "l") == 0 || strcmp(action, "s") == 0){
-    //  cin>>action;
+    //  cin>>action;   
+    //action[1] = 0;
+    //printf("before: %s\n", action);
     cin>>address;
     cin>>store;
+
+    //std::cout << "STORE: "<< store << std::endl;
+    
+    //printf("after: %s\n", action);
     std::cout<<action<<" "<<address<<" "<<store<<"\n";
     return 1;
   }
-  return EOF;
   
+  return -1;
+  */
 }
 
+void hitOrMiss(Cache* cache, char* action, char* address){
+  printf("hitOrMiss: \n");
+
+  printf("total hits: %d\n", cache->loadHits);
+  
+  printf("strlen(action): %ld\t action: %s\n", strlen(action), action);
+  printf("strlen(address): %ld\t address: %s\n", strlen(address), address);
+  
+  if (strcmp(action, "l") == 0) {
+    cache->totalLoads = cache->totalLoads + 1;
+  } else if(strcmp(action, "s") == 0) {
+    cache->totalStores = cache->totalStores + 1;
+    
+  }
+}
 
 
 

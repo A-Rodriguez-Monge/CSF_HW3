@@ -12,7 +12,7 @@ typedef struct{
   unsigned loadTime;
   unsigned accessTime;
   bool isDirty = false; 
-}Block;
+} Block;
 
 typedef struct{
   Block* blocks;
@@ -30,9 +30,9 @@ typedef struct{
   unsigned totalCycles = 0;
 } Cache;
 
-int readLine(Cache* cache, char* action, char* address);
+int readLine(Cache* cache);//, char* action, char* address);
 
-
+void hitOrMiss(Cache* cache, char* action, char* address);
 
 int checkArgs(int argc, char **argv);
 

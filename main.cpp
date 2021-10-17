@@ -22,8 +22,8 @@ using std::cin;
 */
 
 int main(int argc, char **argv) {
-  char action[1];
-  char address[8];
+  char action[]  = "";
+  char address[] = "";// = "0x00000000";
   int result = checkArgs(argc, argv);
 
   if (result != 0) {
@@ -35,9 +35,12 @@ int main(int argc, char **argv) {
   int numBlocks = atoi(argv[2]);
   int numBytes = atoi(argv[3]);
 
-  Cache* cache;
+  Cache* cache = new Cache;  
   cache->sets.reserve(numSets);
 
+  printf("load hits: %d\n", cache->loadHits);
+
+  
   /*  for(vector<Set>::iterator it = std::begin(cache->sets); it != std::end(cache->sets); ++it) {
     it.numBlocks = numBlocks;
     it.blocks = Block[numBlocks];
@@ -47,9 +50,18 @@ int main(int argc, char **argv) {
 
   int read = 0;
 
-  while (read != EOF) {
-    read = readLine(cache, action, address);
-  }
+
+  printf("MAIN: total hits: %u\n", cache->totalLoads);
+
+  printf("HELLO\n");
+  
+   while (read != -1) {
+     //printf("MAIN:\naction: %s\naddress: %s\n\n\n", action, address);
+     read = readLine(cache);//, action, address);
+     //printf("MAIN:\naction: %s\naddress: %s\n", action, address);
+
+     //hitOrMiss(cache, action, address);
+    }
   
   
   //checkTextArgs(); //add function to break up main
@@ -57,6 +69,6 @@ int main(int argc, char **argv) {
   //struct within a struct
   //make a function within a struct just adding 100 cycles and not doing anything else
   //not accessing gcc.trace, piping will automatically 
-  
+  delete cache;
   return 0;
 }
