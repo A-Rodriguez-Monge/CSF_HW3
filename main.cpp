@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
+#include <math.h>
 #include "Helper.h"
 
 using std::cerr;
@@ -33,12 +34,41 @@ int main(int argc, char **argv) {
   
   int numSets = atoi(argv[1]);
   int numBlocks = atoi(argv[2]);
-  int numBytes = atoi(argv[3]);
+  int blockSize = atoi(argv[3]);
+
+  int numIndexBits = log2(numSets);
+  int numOffsetBits = log2(blockSize);
 
   Cache* cache = new Cache;  
   cache->sets.reserve(numSets);
+  printf("sets length %lu: \n", cache->sets.size());
+  for (int i = 0; i < numSets; i++) {
+    Set tempSet;
+    
+    for (int j = 0; j < numBlocks; j++) {
+      Block tempBlock;
+      tempSet.blocks.push_back(tempBlock);
+    }
+    cache->sets.push_back(tempSet);
+  }
 
-  printf("load hits: %d\n", cache->loadHits);
+  cache->sets.at(0).blocks.at(0).tag = 1;
+
+  printf("tag (0,0): %u \n", cache->sets.at(0).blocks.at(0).tag);
+  printf("tag (0,1): %u \n", cache->sets.at(0).blocks.at(1).tag);
+  printf("tag (1,0): %u \n", cache->sets.at(1).blocks.at(0).tag);
+  printf("tag (1,1): %u \n", cache->sets.at(1).blocks.at(1).tag);
+
+  
+  printf("sets length %lu: \n", cache->sets.size());
+  printf("blocks length %lu: \n\n", cache->sets.at(0).blocks.size());
+  
+  cache->numBlocks = numBlocks;
+  printf("numBlocks: %d\n", cache->numBlocks);
+  cache->numIndexBits = numIndexBits;
+  cache->numOffsetBits = numOffsetBits;
+  
+  //printf("load hits: %d\n", cache->loadHits);
 
   
   /*  for(vector<Set>::iterator it = std::begin(cache->sets); it != std::end(cache->sets); ++it) {
@@ -51,17 +81,11 @@ int main(int argc, char **argv) {
   int read = 0;
 
 
-  printf("MAIN: total hits: %u\n", cache->totalLoads);
-
-  printf("HELLO\n");
+  //printf("MAIN: total hits: %u\n", cache->totalLoads);
   
    while (read != -1) {
-     //printf("MAIN:\naction: %s\naddress: %s\n\n\n", action, address);
      read = readLine(cache);//, action, address);
-     //printf("MAIN:\naction: %s\naddress: %s\n", action, address);
-
-     //hitOrMiss(cache, action, address);
-    }
+   }
   
   
   //checkTextArgs(); //add function to break up main

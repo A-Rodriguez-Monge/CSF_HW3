@@ -15,11 +15,16 @@ typedef struct{
 } Block;
 
 typedef struct{
-  Block* blocks;
-  unsigned numBlocks;
+  vector<Block> blocks;
+  unsigned numBlocks; //not sure how to access and if we need it
 } Set;
 
 typedef struct{
+
+  unsigned numBlocks = 0;
+  unsigned numIndexBits = 0;
+  unsigned numOffsetBits = 0;
+  
   vector<Set> sets;
   unsigned totalLoads = 0;
   unsigned totalStores = 0;
@@ -33,6 +38,10 @@ typedef struct{
 int readLine(Cache* cache);//, char* action, char* address);
 
 void hitOrMiss(Cache* cache, char* action, char* address);
+
+unsigned getTag(unsigned address, unsigned numIndexBits, unsigned numOffsetBits);
+
+unsigned getIndex(unsigned Address, unsigned numIndexBits);
 
 int checkArgs(int argc, char **argv);
 

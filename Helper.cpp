@@ -86,6 +86,13 @@ int readLine(Cache* cache){//, char *action, char* address){
   
   std::cout<<*action<<" "<<address<<"\n";
 
+
+  printf("READLINE: \n");
+  printf("tag (0,0): %u \n", cache->sets.at(0).blocks.at(0).tag);
+  printf("tag (0,1): %u \n", cache->sets.at(0).blocks.at(1).tag);
+  printf("tag (1,0): %u \n", cache->sets.at(1).blocks.at(0).tag);
+  printf("tag (1,1): %u \n", cache->sets.at(1).blocks.at(1).tag);
+  
   hitOrMiss(cache, action, address);
   
   return 0;
@@ -127,20 +134,47 @@ int readLine(Cache* cache){//, char *action, char* address){
 }
 
 void hitOrMiss(Cache* cache, char* action, char* address){
-  printf("hitOrMiss: \n");
-
-  printf("total hits: %d\n", cache->loadHits);
+  printf("HITORMISS: \n");
   
   printf("strlen(action): %ld\t action: %s\n", strlen(action), action);
   printf("strlen(address): %ld\t address: %s\n", strlen(address), address);
+
+  //convert address to hex
   
   if (strcmp(action, "l") == 0) {
     cache->totalLoads = cache->totalLoads + 1;
   } else if(strcmp(action, "s") == 0) {
     cache->totalStores = cache->totalStores + 1;
-    
   }
+  
+  printf("total stores: %d\n", cache->totalStores);
+  printf("total loads: %d\n", cache->totalLoads);
+  printf("store hits: %d\n", cache->storeHits);
+  printf("load hits: %d\n", cache->loadHits);
+
+  unsigned convAddress = strtoul(address, NULL, 16);
+  unsigned numIndexBits = cache->numIndexBits;
+  unsigned numOffsetBits = cache->numOffsetBits;
+  
+  printf("convAddress: %x\n", convAddress);
+
+  printf("indexBits %u\toffsetBits %u\n", numIndexBits, numOffsetBits);
+  
+  unsigned tag = getTag(convAddress, numIndexBits, numOffsetBits);
+  unsigned index = getIndex(convAddress >> numOffsetBits, numIndexBits);
+  
+  printf("tag: %x\n", tag);
+  printf("index: %x\n\n", index);
+  
 }
 
+unsigned getTag(unsigned address, unsigned numIndexBits, unsigned numOffsetBits) {
+  return address >> (numIndexBits + numOffsetBits);
+}
+
+unsigned getIndex(unsigned address, unsigned numIndexBits) {
+  unsigned n = 32 - numIndexBits;
+  return (address << n) >> n;
+}
 
 
