@@ -5,11 +5,13 @@
 #include <fstream>
 #include <string.h>
 #include <cstring>
+#include <algorithm>
 #include "Helper.h"
 
 using std::cerr;
 using std::isdigit;
 using std::cin;
+using std::find;
 
 int checkArgs(int argc, char **argv) {
 
@@ -88,10 +90,10 @@ int readLine(Cache* cache){//, char *action, char* address){
 
 
   printf("READLINE: \n");
-  printf("tag (0,0): %u \n", cache->sets.at(0).blocks.at(0).tag);
-  printf("tag (0,1): %u \n", cache->sets.at(0).blocks.at(1).tag);
-  printf("tag (1,0): %u \n", cache->sets.at(1).blocks.at(0).tag);
-  printf("tag (1,1): %u \n", cache->sets.at(1).blocks.at(1).tag);
+  //  printf("tag (0,0): %u \n", cache->sets.at(0).blocks.at(0).tag);
+  // printf("tag (0,1): %u \n", cache->sets.at(0).blocks.at(1).tag);
+  // printf("tag (1,0): %u \n", cache->sets.at(1).blocks.at(0).tag);
+  //printf("tag (1,1): %u \n", cache->sets.at(1).blocks.at(1).tag);
   
   hitOrMiss(cache, action, address);
   
@@ -165,6 +167,11 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   
   printf("tag: %x\n", tag);
   printf("index: %x\n\n", index);
+
+  //check if hit or miss
+  /*int p = find(cache->sets.at(index).blocks, &(cache->sets.at(index).blocks) + cache->numBlocks);*/
+  
+  //
   
 }
 

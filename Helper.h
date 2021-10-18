@@ -16,11 +16,10 @@ typedef struct{
 
 typedef struct{
   vector<Block> blocks;
-  unsigned numBlocks; //not sure how to access and if we need it
+  unsigned numBlocks = 0; //empty blocks are implied to be cache misses
 } Set;
 
 typedef struct{
-
   unsigned numBlocks = 0;
   unsigned numIndexBits = 0;
   unsigned numOffsetBits = 0;
@@ -33,6 +32,9 @@ typedef struct{
   unsigned storeHits  = 0;
   unsigned storeMisses = 0;
   unsigned totalCycles = 0;
+
+  char* missPolicy = "";
+  char* writePolicy = "";
 } Cache;
 
 int readLine(Cache* cache);//, char* action, char* address);
