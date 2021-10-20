@@ -45,10 +45,10 @@ int main(int argc, char **argv) {
   for (int i = 0; i < numSets; i++) {
     Set tempSet;
     
-     for (int j = 0; j < numBlocks; j++) {
+    /* for (int j = 0; j < numBlocks; j++) {
       Block tempBlock;
       tempSet.blocks.push_back(tempBlock);
-      }
+      }*/
     cache->sets.push_back(tempSet);
   }
 
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
   printf("tag (1,1): %u \n", cache->sets.at(1).blocks.at(1).tag);
 
   
-  printf("sets length %lu: \n", cache->sets.size());
+cache->sets.at(index)  printf("sets length %lu: \n", cache->sets.size());
   printf("blocks length %lu: \n\n", cache->sets.at(0).blocks.size());
   */
     
@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
   cache->numOffsetBits = numOffsetBits;
   cache->missPolicy = argv[4];
   cache->writePolicy = argv[5];
+  cache->evictPolicy = argv[6];
    
   //printf("load hits: %d\n", cache->loadHits);
 

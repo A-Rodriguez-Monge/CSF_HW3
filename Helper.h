@@ -9,8 +9,8 @@ using std::vector;
 
 typedef struct{
   unsigned tag;
-  unsigned loadTime;
-  unsigned accessTime;
+  //unsigned loadTime;
+  // unsigned accessTime;
   bool isDirty = false; 
 } Block;
 
@@ -33,8 +33,9 @@ typedef struct{
   unsigned storeMisses = 0;
   unsigned totalCycles = 0;
 
-  char* missPolicy = "";
-  char* writePolicy = "";
+  char* missPolicy;
+  char* writePolicy;
+  char* evictPolicy;
 } Cache;
 
 int readLine(Cache* cache);//, char* action, char* address);
@@ -46,5 +47,13 @@ unsigned getTag(unsigned address, unsigned numIndexBits, unsigned numOffsetBits)
 unsigned getIndex(unsigned Address, unsigned numIndexBits);
 
 int checkArgs(int argc, char **argv);
+
+bool findBlock(Cache *cache, unsigned tag, unsigned index);
+
+void storeFunc(Cache *cache, unsigned tag, unsigned index);
+
+void loadFunc(Cache *cache, unsigned tag, unsigned index);
+
+void updateTime(Set currSet, char* tFormat, Block currBlock); 
 
 #endif

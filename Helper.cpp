@@ -12,6 +12,7 @@ using std::cerr;
 using std::isdigit;
 using std::cin;
 using std::find;
+using std::vector;
 
 int checkArgs(int argc, char **argv) {
 
@@ -169,9 +170,24 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   printf("index: %x\n\n", index);
 
   //check if hit or miss
-  /*int p = find(cache->sets.at(index).blocks, &(cache->sets.at(index).blocks) + cache->numBlocks);*/
+  bool hasBlock = findBlock(cache, tag, index);
   
-  //
+  if (strcmp(action, "l") == 0) {
+    if (findBlock){ //load hits
+      cache->loadHits = cache->loadHits + 1;
+    } else{ //load misses
+       cache->loadMisses = cache->loadMisses + 1;
+    }
+    loadFunc(cache, tag, index);
+  } else if(strcmp(action, "s") == 0) {
+    if (findBlock){ //store hits
+      cache->storeHits = cache->storeHits + 1;
+    } else{ //store  misses
+      cache->storeMisses = cache->storeMisses + 1;
+    }
+    //   storeFunc(cache, tag, index);
+  }
+
   
 }
 
@@ -183,5 +199,46 @@ unsigned getIndex(unsigned address, unsigned numIndexBits) {
   unsigned n = 32 - numIndexBits;
   return (address << n) >> n;
 }
+
+bool findBlock(Cache *cache, unsigned tag, unsigned index){
+  Set currSet = cache->sets.at(index);
+  if (currSet.numBlocks == 0){
+    return false;
+  }
+  for(Block &b :currSet.blocks) {
+    if(b.tag == tag){
+      return true;
+    }
+  }
+  return false;
+}
+
+void loadFunc(Cache *cache, unsigned tag, unsigned index){
+  Set currSet = cache->sets.at(index);
+  if (findBlock(cache, tag, index)){
+    cache->totalCycles++; 
+  } else { //(currSet.numBlocks < cache->numBlocks){ //check if there are still space in set
+    Block newBlock;
+    newBlock.tag = tag;
+    updateTime(currSet, cache->evictPolicy, newBlock);
+    cache->totalCycles++;
+    //currSet.blocks.push_back(newBlock);
+  } 
+}
+
+void updateTime(Set currSet, char* tFormat, Block currBlock){
+  std::vector<Block>::iterator it;
+  if (strcmp(tFormat, "lru") == 0){
+    currSet.blocks.push_back(currBlock);
+  } else if (strcmp(tFormat, "fifo") == 0){
+    currSet.blocks.insert(it, 0, currBlock);
+  }
+  
+
+
+} 
+
+  
+
 
 
