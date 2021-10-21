@@ -55,7 +55,9 @@ void storeFunc(Cache *cache, unsigned tag, unsigned index);
 
 void loadFunc(Cache *cache, unsigned tag, unsigned index);
 
-void updateTime(Set *currSet, char* tFormat, Block *currBlock); 
+void addBlock(Set *currSet, char* tFormat, Block *currBlock); 
+
+void updateTime(Set *currSet, Cache *cache, int blockIdx);
 
 void evictBlock(Set *currSet, char* tFormat, Cache* cache);
 

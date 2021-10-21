@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
   Cache* cache = new Cache;  
   cache->sets.reserve(numSets);
-  // printf("sets length %lu: \n", cache->sets.size());
+  printf("About to initialize the sets\n");
   for (int i = 0; i < numSets; i++) {
     Set tempSet;
     
@@ -87,7 +87,8 @@ cache->sets.at(index)  printf("sets length %lu: \n", cache->sets.size());
 
 
   //printf("MAIN: total hits: %u\n", cache->totalLoads);
-  
+  printf("About to read lines\n");
+
    while (read != -1) {
      read = readLine(cache);//, action, address);
    }

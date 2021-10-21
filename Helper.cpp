@@ -52,17 +52,17 @@ int checkArgs(int argc, char **argv) {
   }
 
   //validate arg combos
-  if (strcmp("write-through", argv[5]) == 0) {
+  /*if (strcmp("write-through", argv[5]) == 0) {
     if (strcmp("no-write-allocate", argv[4]) != 0) {
       cerr << "Invalid Combo\n";
       exit(1);
     }
-  }
+  }*/
 
-  if (strcmp("write-back", argv[5]) == 0) {
-    if (strcmp("write-allocate", argv[4]) != 0) {
-      cerr << "Invalid Combo\n";
-      exit(1);
+    if (strcmp("write-back", argv[5]) == 0) {
+      if (strcmp("no-write-allocate", argv[4]) == 0) {
+	cerr << "Invalid Combo\n";
+	exit(1);
     }
   }
 
@@ -172,32 +172,32 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   //check if hit or miss
   int blockIdx = findBlock(cache, tag, index);
   Set *currSet = &cache->sets.at(index);
-  if (strcmp(action, "l") == 0) {
+  if (strcmp(action, "l") == 0) { //deals with loads
     if (blockIdx > -1){ //load hits
       //  printf("LOAD HIT\n");
       cache->loadHits = cache->loadHits + 1;
-       cache->totalCycles++;
+      cache->totalCycles++;
+      updateTime(currSet, cache, blockIdx);
     } else{ //load misses
       //printf("LOAD MISS\n");
-
        cache->loadMisses = cache->loadMisses + 1;
         Block newBlock;
 	newBlock.tag = tag;
 	cache->totalCycles++;
-
-	if (currSet->numBlocks > cache->numBlocks){ //if you can add more blocks
+	/*if (currSet->numBlocks == cache->numBlocks){
+	  printf("currSet is max capacity\n"); 
+    }*/	
+	if (currSet->numBlocks >= cache->numBlocks){ //if you can add more blocks
 	  evictBlock(currSet, cache->evictPolicy, cache);
 	  //  printf("We need to evict a block\n");
 	}
-	updateTime(currSet, cache->evictPolicy, &newBlock);
+	addBlock(currSet, cache->evictPolicy, &newBlock);
 	cache->totalCycles += (cache->blockBytes)/4 * 100;
-	currSet->numBlocks++;
+	//currSet->numBlocks++;
 	//	printf("current size of set: %u\n", currSet->numBlocks);
-	
-
     }
     // loadFunc(cache, tag, index); 
-  } else if(strcmp(action, "s") == 0) {
+  } else if(strcmp(action, "s") == 0) { //deals with stores 
     if (blockIdx >-1){ //store hits
       // printf("STORE HIT\n");
       cache->storeHits = cache->storeHits + 1;
@@ -237,6 +237,7 @@ int findBlock(Cache *cache, unsigned tag, unsigned index){
     if(b.tag == tag){
       return counter;
     }
+    counter++;
   }
   return -1;
 }
@@ -254,8 +255,9 @@ int findBlock(Cache *cache, unsigned tag, unsigned index){
   } 
   }*/
 
-void updateTime(Set *currSet, char* tFormat, Block *currBlock){
+void addBlock(Set *currSet, char* tFormat, Block *currBlock){
   //std::vector<Block>::iterator it;
+  currSet->numBlocks++;
   if (strcmp(tFormat, "lru") == 0){
     currSet->blocks.push_back(*currBlock); //last used is in the front
   } else if (strcmp(tFormat, "fifo") == 0){ //oldest is the back 
@@ -280,8 +282,23 @@ void updateTime(Set *currSet, char* tFormat, Block *currBlock){
      currSet->blocks.pop_back();
      //currSet->blocks.insert(it, 0, *currBlock);
    }
+   cache->totalCycles++;
    currSet->numBlocks--;
  }
+
+void updateTime(Set *currSet, Cache *cache, int blockIdx){
+  Block tempBlock =  currSet->blocks.at(blockIdx);
+  if (strcmp(cache->evictPolicy, "lru") == 0){
+    currSet->blocks.erase(currSet->blocks.begin() + blockIdx);
+    currSet->blocks.push_back(tempBlock);
+   } else if (strcmp(cache->evictPolicy, "fifo") == 0){ //the back was the first in
+    /* if (currSet->blocks.at(cache->numBlocks - 1).isDirty){ //check last one
+       cache->totalCycles += (cache->blockBytes)/4 * 100;
+     }
+     currSet->blocks.pop_back();*/
+     //currSet->blocks.insert(it, 0, *currBlock);
+   }
+}
 
 void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
   if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
@@ -294,21 +311,38 @@ void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
   }else {
     currSet->blocks.at(blockIdx).isDirty = true;
   }
+  updateTime(currSet, cache, blockIdx);
 }
 
 void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
-    if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->mi\
-ssPolicy, "write-allocate") == 0)){
+  Block newBlock;
+  newBlock.tag = tag;
+      
+  if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
+    if (currSet->numBlocks >= cache->numBlocks){ //if you can add more bl \
+						ocks
+      evictBlock(currSet, cache->evictPolicy, cache);
+      //  printf("We need to evict a block\n");
+    }
+    addBlock(currSet, cache->evictPolicy, &newBlock);
     cache->totalCycles += 100;
+    cache->totalCycles++;
     // currSet->blocks.at(blockIdx).isDirty = true;
     cache->totalCycles += (cache->blockBytes)/4 * 100;
-  }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cac\
-he->missPolicy, "no_write-allocate") == 0)){
-    cache->totalCycles += 100;
+  }else if ((strcmp(cache->writePolicy, "write-back") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
+    if (currSet->numBlocks >= cache->numBlocks){ //if you can add more bl \
+                                                ocks
+      evictBlock(currSet, cache->evictPolicy, cache);
+      //  printf("We need to evict a block\n");
+    }
+    cache->totalCycles++;
+    cache->totalCycles += (cache->blockBytes)/4 * 100; 
+    addBlock(currSet, cache->evictPolicy, &newBlock);
+    
     //currSet->blocks.at(blockIdx).isDirty = true;
-  }else {
-      //currSet->blocks.at(blockIdx).isDirty = true;
-  }
+  }/*else {
+   //currSet->blocks.at(blockIdx).isDirty = true;
+   }*/
 }
 
 void printCache(Cache *cache){
