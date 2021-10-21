@@ -16,13 +16,14 @@ typedef struct{
 
 typedef struct{
   vector<Block> blocks;
-  unsigned numBlocks = 0; //empty blocks are implied to be cache misses
+  unsigned numBlocks = 0; 
 } Set;
 
 typedef struct{
   unsigned numBlocks = 0;
   unsigned numIndexBits = 0;
   unsigned numOffsetBits = 0;
+  unsigned blockBytes = 0;
   
   vector<Set> sets;
   unsigned totalLoads = 0;
@@ -48,12 +49,20 @@ unsigned getIndex(unsigned Address, unsigned numIndexBits);
 
 int checkArgs(int argc, char **argv);
 
-bool findBlock(Cache *cache, unsigned tag, unsigned index);
+int findBlock(Cache *cache, unsigned tag, unsigned index);
 
 void storeFunc(Cache *cache, unsigned tag, unsigned index);
 
 void loadFunc(Cache *cache, unsigned tag, unsigned index);
 
-void updateTime(Set currSet, char* tFormat, Block currBlock); 
+void updateTime(Set *currSet, char* tFormat, Block *currBlock); 
+
+void evictBlock(Set *currSet, char* tFormat, Cache* cache);
+
+void storeHitFunc(Set *currSet, Cache *cache, int  blockIdx);
+
+void storeMissFunc(Set *currSet, Cache *cache, unsigned tag);
+
+void printCache(Cache *cache);
 
 #endif

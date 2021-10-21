@@ -72,7 +72,7 @@ int checkArgs(int argc, char **argv) {
 
 int readLine(Cache* cache){//, char *action, char* address){
 
-  printf("total hits: %d\n", cache->loadHits);
+  //printf("total hits: %d\n", cache->loadHits);
   
   std::string curLine;
   getline(cin, curLine);
@@ -87,10 +87,10 @@ int readLine(Cache* cache){//, char *action, char* address){
   char *action = strtok(cur, " ");
   char *address = strtok(NULL, " ");
   
-  std::cout<<*action<<" "<<address<<"\n";
+  //std::cout<<*action<<" "<<address<<"\n";
 
 
-  printf("READLINE: \n");
+  //printf("READLINE: \n");
   //  printf("tag (0,0): %u \n", cache->sets.at(0).blocks.at(0).tag);
   // printf("tag (0,1): %u \n", cache->sets.at(0).blocks.at(1).tag);
   // printf("tag (1,0): %u \n", cache->sets.at(1).blocks.at(0).tag);
@@ -137,11 +137,11 @@ int readLine(Cache* cache){//, char *action, char* address){
 }
 
 void hitOrMiss(Cache* cache, char* action, char* address){
-  printf("HITORMISS: \n");
+  /*  printf("HITORMISS: \n");
   
   printf("strlen(action): %ld\t action: %s\n", strlen(action), action);
   printf("strlen(address): %ld\t address: %s\n", strlen(address), address);
-
+  */
   //convert address to hex
   
   if (strcmp(action, "l") == 0) {
@@ -149,44 +149,70 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   } else if(strcmp(action, "s") == 0) {
     cache->totalStores = cache->totalStores + 1;
   }
-  
+  /*
   printf("total stores: %d\n", cache->totalStores);
   printf("total loads: %d\n", cache->totalLoads);
   printf("store hits: %d\n", cache->storeHits);
   printf("load hits: %d\n", cache->loadHits);
-
+  */
   unsigned convAddress = strtoul(address, NULL, 16);
   unsigned numIndexBits = cache->numIndexBits;
   unsigned numOffsetBits = cache->numOffsetBits;
-  
+  /*
   printf("convAddress: %x\n", convAddress);
 
   printf("indexBits %u\toffsetBits %u\n", numIndexBits, numOffsetBits);
-  
+  */
   unsigned tag = getTag(convAddress, numIndexBits, numOffsetBits);
   unsigned index = getIndex(convAddress >> numOffsetBits, numIndexBits);
-  
+  /*
   printf("tag: %x\n", tag);
-  printf("index: %x\n\n", index);
-
+  printf("index: %x\n", index);
+  */
   //check if hit or miss
-  bool hasBlock = findBlock(cache, tag, index);
-  
+  int blockIdx = findBlock(cache, tag, index);
+  Set *currSet = &cache->sets.at(index);
   if (strcmp(action, "l") == 0) {
-    if (findBlock){ //load hits
+    if (blockIdx > -1){ //load hits
+      //  printf("LOAD HIT\n");
       cache->loadHits = cache->loadHits + 1;
+       cache->totalCycles++;
     } else{ //load misses
+      //printf("LOAD MISS\n");
+
        cache->loadMisses = cache->loadMisses + 1;
+        Block newBlock;
+	newBlock.tag = tag;
+	cache->totalCycles++;
+
+	if (currSet->numBlocks > cache->numBlocks){ //if you can add more blocks
+	  evictBlock(currSet, cache->evictPolicy, cache);
+	  //  printf("We need to evict a block\n");
+	}
+	updateTime(currSet, cache->evictPolicy, &newBlock);
+	cache->totalCycles += (cache->blockBytes)/4 * 100;
+	currSet->numBlocks++;
+	//	printf("current size of set: %u\n", currSet->numBlocks);
+	
+
     }
-    loadFunc(cache, tag, index);
+    // loadFunc(cache, tag, index); 
   } else if(strcmp(action, "s") == 0) {
-    if (findBlock){ //store hits
+    if (blockIdx >-1){ //store hits
+      // printf("STORE HIT\n");
       cache->storeHits = cache->storeHits + 1;
+      storeHitFunc(currSet, cache, blockIdx);
+      cache->totalCycles++;
     } else{ //store  misses
+      //printf("STORE MISSE\n");
       cache->storeMisses = cache->storeMisses + 1;
+      storeMissFunc(currSet, cache, tag);
+	//cache->totalCycles++;
     }
     //   storeFunc(cache, tag, index);
   }
+
+  //printf("This is the total number of cycles: %u\n\n", cache->totalCycles);
 
   
 }
@@ -200,20 +226,22 @@ unsigned getIndex(unsigned address, unsigned numIndexBits) {
   return (address << n) >> n;
 }
 
-bool findBlock(Cache *cache, unsigned tag, unsigned index){
+int findBlock(Cache *cache, unsigned tag, unsigned index){
   Set currSet = cache->sets.at(index);
   if (currSet.numBlocks == 0){
-    return false;
+    return -1;
   }
+
+  int counter = 0;
   for(Block &b :currSet.blocks) {
     if(b.tag == tag){
-      return true;
+      return counter;
     }
   }
-  return false;
+  return -1;
 }
 
-void loadFunc(Cache *cache, unsigned tag, unsigned index){
+/*void loadFunc(Cache *cache, unsigned tag, unsigned index){
   Set currSet = cache->sets.at(index);
   if (findBlock(cache, tag, index)){
     cache->totalCycles++; 
@@ -224,20 +252,74 @@ void loadFunc(Cache *cache, unsigned tag, unsigned index){
     cache->totalCycles++;
     //currSet.blocks.push_back(newBlock);
   } 
-}
+  }*/
 
-void updateTime(Set currSet, char* tFormat, Block currBlock){
-  std::vector<Block>::iterator it;
+void updateTime(Set *currSet, char* tFormat, Block *currBlock){
+  //std::vector<Block>::iterator it;
   if (strcmp(tFormat, "lru") == 0){
-    currSet.blocks.push_back(currBlock);
-  } else if (strcmp(tFormat, "fifo") == 0){
-    currSet.blocks.insert(it, 0, currBlock);
+    currSet->blocks.push_back(*currBlock); //last used is in the front
+  } else if (strcmp(tFormat, "fifo") == 0){ //oldest is the back 
+    currSet->blocks.insert(currSet->blocks.begin(), 0, *currBlock);
   }
-  
-
 
 } 
 
+ void evictBlock(Set *currSet, char* tFormat, Cache* cache){
+   /* if (currSet->blocks.at(blockIdx).isDirty){
+     cache->totalCycles += (cache->blockBytes)/4 * 100; 
+     }*/
+   if (strcmp(tFormat, "lru") == 0){
+     if (currSet->blocks.at(0).isDirty){ //check last one
+       cache->totalCycles += (cache->blockBytes)/4 * 100;
+     }
+     currSet->blocks.erase(currSet->blocks.begin()); 
+   } else if (strcmp(tFormat, "fifo") == 0){ //the back was the first in
+     if (currSet->blocks.at(cache->numBlocks - 1).isDirty){ //check last one
+       cache->totalCycles += (cache->blockBytes)/4 * 100;
+     }
+     currSet->blocks.pop_back();
+     //currSet->blocks.insert(it, 0, *currBlock);
+   }
+   currSet->numBlocks--;
+ }
+
+void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
+  if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
+    cache->totalCycles += 100;
+    currSet->blocks.at(blockIdx).isDirty = true;
+    cache->totalCycles += (cache->blockBytes)/4 * 100;
+  }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "no_write-allocate") == 0)){
+    cache->totalCycles += 100;
+    currSet->blocks.at(blockIdx).isDirty = true;
+  }else {
+    currSet->blocks.at(blockIdx).isDirty = true;
+  }
+}
+
+void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
+    if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->mi\
+ssPolicy, "write-allocate") == 0)){
+    cache->totalCycles += 100;
+    // currSet->blocks.at(blockIdx).isDirty = true;
+    cache->totalCycles += (cache->blockBytes)/4 * 100;
+  }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cac\
+he->missPolicy, "no_write-allocate") == 0)){
+    cache->totalCycles += 100;
+    //currSet->blocks.at(blockIdx).isDirty = true;
+  }else {
+      //currSet->blocks.at(blockIdx).isDirty = true;
+  }
+}
+
+void printCache(Cache *cache){
+  std::cout<<"Total loads: "<<cache->totalLoads<<"\n";
+  std::cout<<"Total stores: "<<cache->totalStores<<"\n";
+  std::cout<<"Loads hits: "<<cache->loadHits<<"\n";
+  std::cout<<"Loads misses: "<<cache->loadMisses<<"\n";
+  std::cout<<"Store hits: "<<cache->storeHits<<"\n";
+  std::cout<<"Store misses: "<<cache->storeMisses<<"\n";
+  std::cout<<"Total cycles: "<<cache->totalCycles<<"\n";
+}
   
 
 

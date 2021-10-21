@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
   Cache* cache = new Cache;  
   cache->sets.reserve(numSets);
-  printf("sets length %lu: \n", cache->sets.size());
+  // printf("sets length %lu: \n", cache->sets.size());
   for (int i = 0; i < numSets; i++) {
     Set tempSet;
     
@@ -65,6 +65,7 @@ cache->sets.at(index)  printf("sets length %lu: \n", cache->sets.size());
   */
     
   cache->numBlocks = numBlocks;
+  cache->blockBytes = blockSize;
   //printf("numBlocks: %d\n", cache->numBlocks);
   cache->numIndexBits = numIndexBits;
   cache->numOffsetBits = numOffsetBits;
@@ -97,6 +98,7 @@ cache->sets.at(index)  printf("sets length %lu: \n", cache->sets.size());
   //struct within a struct
   //make a function within a struct just adding 100 cycles and not doing anything else
   //not accessing gcc.trace, piping will automatically 
-  delete cache;
-  return 0;
+   printCache(cache);
+   delete cache;
+   return 0;
 }
