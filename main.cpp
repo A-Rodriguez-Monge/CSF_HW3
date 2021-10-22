@@ -36,8 +36,10 @@ int main(int argc, char **argv) {
   int numBlocks = atoi(argv[2]);
   int blockSize = atoi(argv[3]);
 
-  int numIndexBits = log2(numSets);
-  int numOffsetBits = log2(blockSize);
+  unsigned numIndexBits = log2(numSets);
+  printf("numIndexBits: %d\n", numIndexBits);
+
+  unsigned numOffsetBits = log2(blockSize);
 
   Cache* cache = new Cache;  
   cache->sets.reserve(numSets);

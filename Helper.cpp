@@ -99,41 +99,6 @@ int readLine(Cache* cache){//, char *action, char* address){
   hitOrMiss(cache, action, address);
   
   return 0;
-  
-  /*
-  std::string store;
-
-  getline(cin, store);
-  
-  if (store.empty()) {
-    printf("EMPTY\n");
-    return -1;
-  }
-  
-  cin>>action;
-  //std::cout<<action<<" ";
-  /*while (true){
-    cin>>action;
-    std::cout<<action<<"\n";
-  }
-  
-
-  if (strcmp(action, "l") == 0 || strcmp(action, "s") == 0){
-    //  cin>>action;   
-    //action[1] = 0;
-    //printf("before: %s\n", action);
-    cin>>address;
-    cin>>store;
-
-    //std::cout << "STORE: "<< store << std::endl;
-    
-    //printf("after: %s\n", action);
-    std::cout<<action<<" "<<address<<" "<<store<<"\n";
-    return 1;
-  }
-  
-  return -1;
-  */
 }
 
 void hitOrMiss(Cache* cache, char* action, char* address){
@@ -158,17 +123,21 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   unsigned convAddress = strtoul(address, NULL, 16);
   unsigned numIndexBits = cache->numIndexBits;
   unsigned numOffsetBits = cache->numOffsetBits;
-  /*
+  
   printf("convAddress: %x\n", convAddress);
-
+  
   printf("indexBits %u\toffsetBits %u\n", numIndexBits, numOffsetBits);
-  */
+  
   unsigned tag = getTag(convAddress, numIndexBits, numOffsetBits);
-  unsigned index = getIndex(convAddress >> numOffsetBits, numIndexBits);
-  /*
+  unsigned tagIndexAddress = convAddress >> numOffsetBits;
+
+  unsigned index = getIndex(tagIndexAddress, numIndexBits);
+
   printf("tag: %x\n", tag);
   printf("index: %x\n", index);
-  */
+
+  printf("Index (unsigned) %u\n\n", index);
+  
   //check if hit or miss
   int blockIdx = findBlock(cache, tag, index);
   Set *currSet = &cache->sets.at(index);
@@ -222,8 +191,31 @@ unsigned getTag(unsigned address, unsigned numIndexBits, unsigned numOffsetBits)
 }
 
 unsigned getIndex(unsigned address, unsigned numIndexBits) {
+
+  /*
+    unsigned address = 2726;//without offset
+    unsigned a = 32;
+    unsigned index = 2726 & (a-1);
+    unsigned tag = address - index >> 5; //5 = log2(a);
+
+  */
+  
+  if (numIndexBits == 0) {
+    return 0;
+  }
+
   unsigned n = 32 - numIndexBits;
-  return (address << n) >> n;
+
+  //unsigned long long taddress = (unsigned long long)address;
+  
+  printf("n: %u\n", n);
+  printf("first shift: %u\n", address << n);
+  
+  unsigned long long temp = (address << n) >> n;
+
+  printf("GETINDEX: %llu\n\n\n", temp);
+  
+  return temp;
 }
 
 int findBlock(Cache *cache, unsigned tag, unsigned index){
