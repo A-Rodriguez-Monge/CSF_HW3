@@ -103,5 +103,5 @@ cache->sets.at(index)  printf("sets length %lu: \n", cache->sets.size());
   //not accessing gcc.trace, piping will automatically 
    printCache(cache);
    delete cache;
-   return 0;
+   exit(0);
 }
