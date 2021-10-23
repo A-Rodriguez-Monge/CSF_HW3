@@ -71,8 +71,6 @@ int checkArgs(int argc, char **argv) {
 }
 
 int readLine(Cache* cache){//, char *action, char* address){
-
-  //printf("total hits: %d\n", cache->loadHits);
   
   std::string curLine;
   getline(cin, curLine);
@@ -124,20 +122,21 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   unsigned numIndexBits = cache->numIndexBits;
   unsigned numOffsetBits = cache->numOffsetBits;
   
-  printf("convAddress: %x\n", convAddress);
+  //printf("convAddress: %x\n", convAddress);
   
-  printf("indexBits %u\toffsetBits %u\n", numIndexBits, numOffsetBits);
+  //printf("indexBits %u\toffsetBits %u\n", numIndexBits, numOffsetBits);
   
   unsigned tag = getTag(convAddress, numIndexBits, numOffsetBits);
   unsigned tagIndexAddress = convAddress >> numOffsetBits;
 
   unsigned index = getIndex(tagIndexAddress, numIndexBits);
 
+  /*
   printf("tag: %x\n", tag);
   printf("index: %x\n", index);
 
   printf("Index (unsigned) %u\n\n", index);
-  
+  */
   //check if hit or miss
   int blockIdx = findBlock(cache, tag, index);
   Set *currSet = &cache->sets.at(index);
@@ -149,9 +148,11 @@ void hitOrMiss(Cache* cache, char* action, char* address){
       updateTime(currSet, cache, blockIdx);
     } else{ //load misses
       //printf("LOAD MISS\n");
-       cache->loadMisses = cache->loadMisses + 1;
+      cache->loadMisses = cache->loadMisses + 1; //if set is fully empty, need to populate set. need to access memory to load set
         Block newBlock;
 	newBlock.tag = tag;
+
+	//may access memory which means total cycles is different
 	cache->totalCycles++;
 	/*if (currSet->numBlocks == cache->numBlocks){
 	  printf("currSet is max capacity\n"); 
@@ -161,7 +162,7 @@ void hitOrMiss(Cache* cache, char* action, char* address){
 	  //  printf("We need to evict a block\n");
 	}
 	addBlock(currSet, cache->evictPolicy, &newBlock);
-	cache->totalCycles += (cache->blockBytes)/4 * 100;
+	cache->totalCycles += (cache->blockBytes)/4 * 100; // make 100 a global var
 	//currSet->numBlocks++;
 	//	printf("current size of set: %u\n", currSet->numBlocks);
     }
@@ -182,7 +183,6 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   }
 
   //printf("This is the total number of cycles: %u\n\n", cache->totalCycles);
-
   
 }
 
@@ -191,7 +191,6 @@ unsigned getTag(unsigned address, unsigned numIndexBits, unsigned numOffsetBits)
 }
 
 unsigned getIndex(unsigned address, unsigned numIndexBits) {
-
   /*
     unsigned address = 2726;//without offset
     unsigned a = 32;
@@ -205,15 +204,8 @@ unsigned getIndex(unsigned address, unsigned numIndexBits) {
   }
 
   unsigned n = 32 - numIndexBits;
-
-  //unsigned long long taddress = (unsigned long long)address;
-  
-  printf("n: %u\n", n);
-  printf("first shift: %u\n", address << n);
   
   unsigned long long temp = (address << n) >> n;
-
-  printf("GETINDEX: %llu\n\n\n", temp);
   
   return temp;
 }
@@ -296,7 +288,7 @@ void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
   if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
     cache->totalCycles += 100;
     currSet->blocks.at(blockIdx).isDirty = true;
-    cache->totalCycles += (cache->blockBytes)/4 * 100;
+    //cache->totalCycles += (cache->blockBytes)/4 * 100;
   }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "no_write-allocate") == 0)){
     cache->totalCycles += 100;
     currSet->blocks.at(blockIdx).isDirty = true;
@@ -332,19 +324,24 @@ void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
     addBlock(currSet, cache->evictPolicy, &newBlock);
     
     //currSet->blocks.at(blockIdx).isDirty = true;
-  }/*else {
+  }else {
+    cache->totalCycles += 100;
+  }
+  //write-through + no-write-allocate
+
+  /*else {
    //currSet->blocks.at(blockIdx).isDirty = true;
    }*/
 }
 
 void printCache(Cache *cache){
-  std::cout<<"Total loads: "<<cache->totalLoads<<"\n";
-  std::cout<<"Total stores: "<<cache->totalStores<<"\n";
-  std::cout<<"Loads hits: "<<cache->loadHits<<"\n";
-  std::cout<<"Loads misses: "<<cache->loadMisses<<"\n";
-  std::cout<<"Store hits: "<<cache->storeHits<<"\n";
-  std::cout<<"Store misses: "<<cache->storeMisses<<"\n";
-  std::cout<<"Total cycles: "<<cache->totalCycles<<"\n";
+  std::cout<<"Total loads: "<<cache->totalLoads<<std::endl;
+  std::cout<<"Total stores: "<<cache->totalStores<<std::endl;
+  std::cout<<"Load hits: "<<cache->loadHits<<std::endl;
+  std::cout<<"Load misses: "<<cache->loadMisses<<std::endl;
+  std::cout<<"Store hits: "<<cache->storeHits<<std::endl;
+  std::cout<<"Store misses: "<<cache->storeMisses<<std::endl;
+  std::cout<<"Total cycles: "<<cache->totalCycles<<std::endl;
 }
   
 

@@ -37,13 +37,13 @@ int main(int argc, char **argv) {
   int blockSize = atoi(argv[3]);
 
   unsigned numIndexBits = log2(numSets);
-  printf("numIndexBits: %d\n", numIndexBits);
+  // printf("numIndexBits: %d\n", numIndexBits);
 
   unsigned numOffsetBits = log2(blockSize);
 
   Cache* cache = new Cache;  
   cache->sets.reserve(numSets);
-  printf("About to initialize the sets\n");
+  //printf("About to initialize the sets\n");
   for (int i = 0; i < numSets; i++) {
     Set tempSet;
     
@@ -53,18 +53,6 @@ int main(int argc, char **argv) {
       }*/
     cache->sets.push_back(tempSet);
   }
-
-  /* cache->sets.at(0).blocks.at(0).tag = 1;
-
-  printf("tag (0,0): %u \n", cache->sets.at(0).blocks.at(0).tag);
-  printf("tag (0,1): %u \n", cache->sets.at(0).blocks.at(1).tag);
-  printf("tag (1,0): %u \n", cache->sets.at(1).blocks.at(0).tag);
-  printf("tag (1,1): %u \n", cache->sets.at(1).blocks.at(1).tag);
-
-  
-cache->sets.at(index)  printf("sets length %lu: \n", cache->sets.size());
-  printf("blocks length %lu: \n\n", cache->sets.at(0).blocks.size());
-  */
     
   cache->numBlocks = numBlocks;
   cache->blockBytes = blockSize;
@@ -89,7 +77,7 @@ cache->sets.at(index)  printf("sets length %lu: \n", cache->sets.size());
 
 
   //printf("MAIN: total hits: %u\n", cache->totalLoads);
-  printf("About to read lines\n");
+  //printf("About to read lines\n");
 
    while (read != -1) {
      read = readLine(cache);//, action, address);
