@@ -289,7 +289,7 @@ void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
     cache->totalCycles += 100;
     currSet->blocks.at(blockIdx).isDirty = true;
     //cache->totalCycles += (cache->blockBytes)/4 * 100;
-  }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "no_write-allocate") == 0)){
+  }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "no-write-allocate") == 0)){
     cache->totalCycles += 100;
     currSet->blocks.at(blockIdx).isDirty = true;
   }else {
@@ -301,7 +301,9 @@ void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
 void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
   Block newBlock;
   newBlock.tag = tag;
-      
+
+  unsigned curTotal = 0;
+  
   if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
     if (currSet->numBlocks >= cache->numBlocks){ //if you can add more bl \
 						ocks
@@ -311,27 +313,23 @@ void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
     addBlock(currSet, cache->evictPolicy, &newBlock);
     cache->totalCycles += 100;
     cache->totalCycles++;
-    // currSet->blocks.at(blockIdx).isDirty = true;
     cache->totalCycles += (cache->blockBytes)/4 * 100;
+    /*
+    curTotal += 100;
+    curtotal++;
+    curTotal += (cache->blockBytes)/4 * 100;
+    */
   }else if ((strcmp(cache->writePolicy, "write-back") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
     if (currSet->numBlocks >= cache->numBlocks){ //if you can add more bl \
                                                 ocks
       evictBlock(currSet, cache->evictPolicy, cache);
-      //  printf("We need to evict a block\n");
     }
     cache->totalCycles++;
-    cache->totalCycles += (cache->blockBytes)/4 * 100; 
+    cache->totalCycles += (cache->blockBytes)/4 * 100;
     addBlock(currSet, cache->evictPolicy, &newBlock);
-    
-    //currSet->blocks.at(blockIdx).isDirty = true;
   }else {
     cache->totalCycles += 100;
   }
-  //write-through + no-write-allocate
-
-  /*else {
-   //currSet->blocks.at(blockIdx).isDirty = true;
-   }*/
 }
 
 void printCache(Cache *cache){
