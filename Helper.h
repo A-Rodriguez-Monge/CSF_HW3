@@ -61,7 +61,7 @@ void updateTime(Set *currSet, Cache *cache, int blockIdx);
 
 void evictBlock(Set *currSet, char* tFormat, Cache* cache);
 
-void storeHitFunc(Set *currSet, Cache *cache, int  blockIdx);
+void storeHitFunc(Set *currSet, Cache *cache, int blockIdx);
 
 void storeMissFunc(Set *currSet, Cache *cache, unsigned tag);
 
