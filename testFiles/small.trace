@@ -1,2 +1,3 @@
-s 0x1fffff50 0
+l 0x1fffff50 0
 l 0x0000AA40 1
+l 0x1fffff50 0

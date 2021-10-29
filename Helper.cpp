@@ -50,19 +50,10 @@ int checkArgs(int argc, char **argv) {
       cerr << "Invalid Input: 5th argument is invalid - must be lru or  fifo\n";
       exit(1);
   }
-
-  //validate arg combos
-  /*if (strcmp("write-through", argv[5]) == 0) {
-    if (strcmp("no-write-allocate", argv[4]) != 0) {
+  if (strcmp("write-back", argv[5]) == 0) {
+    if (strcmp("no-write-allocate", argv[4]) == 0) {
       cerr << "Invalid Combo\n";
       exit(1);
-    }
-  }*/
-
-    if (strcmp("write-back", argv[5]) == 0) {
-      if (strcmp("no-write-allocate", argv[4]) == 0) {
-	cerr << "Invalid Combo\n";
-	exit(1);
     }
   }
 
@@ -84,106 +75,68 @@ int readLine(Cache* cache){//, char *action, char* address){
 
   char *action = strtok(cur, " ");
   char *address = strtok(NULL, " ");
-  
-  //std::cout<<*action<<" "<<address<<"\n";
-
-
-  //printf("READLINE: \n");
-  //  printf("tag (0,0): %u \n", cache->sets.at(0).blocks.at(0).tag);
-  // printf("tag (0,1): %u \n", cache->sets.at(0).blocks.at(1).tag);
-  // printf("tag (1,0): %u \n", cache->sets.at(1).blocks.at(0).tag);
-  //printf("tag (1,1): %u \n", cache->sets.at(1).blocks.at(1).tag);
-  
+ 
   hitOrMiss(cache, action, address);
   
   return 0;
 }
 
 void hitOrMiss(Cache* cache, char* action, char* address){
-  /*  printf("HITORMISS: \n");
-  
-  printf("strlen(action): %ld\t action: %s\n", strlen(action), action);
-  printf("strlen(address): %ld\t address: %s\n", strlen(address), address);
-  */
-  //convert address to hex
-  
+ 
   if (strcmp(action, "l") == 0) {
     cache->totalLoads = cache->totalLoads + 1;
   } else if(strcmp(action, "s") == 0) {
     cache->totalStores = cache->totalStores + 1;
   }
-  /*
-  printf("total stores: %d\n", cache->totalStores);
-  printf("total loads: %d\n", cache->totalLoads);
-  printf("store hits: %d\n", cache->storeHits);
-  printf("load hits: %d\n", cache->loadHits);
-  */
+
   unsigned convAddress = strtoul(address, NULL, 16);
   unsigned numIndexBits = cache->numIndexBits;
   unsigned numOffsetBits = cache->numOffsetBits;
-  
-  //printf("convAddress: %x\n", convAddress);
-  
-  //printf("indexBits %u\toffsetBits %u\n", numIndexBits, numOffsetBits);
   
   unsigned tag = getTag(convAddress, numIndexBits, numOffsetBits);
   unsigned tagIndexAddress = convAddress >> numOffsetBits;
 
   unsigned index = getIndex(tagIndexAddress, numIndexBits);
 
-  /*
-  printf("tag: %x\n", tag);
-  printf("index: %x\n", index);
-
-  printf("Index (unsigned) %u\n\n", index);
-  */
   //check if hit or miss
   int blockIdx = findBlock(cache, tag, index);
   Set *currSet = &cache->sets.at(index);
   if (strcmp(action, "l") == 0) { //deals with loads
     if (blockIdx > -1){ //load hits
-      //  printf("LOAD HIT\n");
+  
       cache->loadHits = cache->loadHits + 1;
       cache->totalCycles++;
       updateTime(currSet, cache, blockIdx);
     } else{ //load misses
-      //printf("LOAD MISS\n");
+  
       cache->loadMisses = cache->loadMisses + 1; //if set is fully empty, need to populate set. need to access memory to load set
         Block newBlock;
 	newBlock.tag = tag;
 
 	//may access memory which means total cycles is different
 	cache->totalCycles++;
-	/*if (currSet->numBlocks == cache->numBlocks){
-	  printf("currSet is max capacity\n"); 
-    }*/	
+
 	if (currSet->numBlocks >= cache->numBlocks){ //if you can add more blocks
 	  evictBlock(currSet, cache->evictPolicy, cache);
 	  //  printf("We need to evict a block\n");
 	}
 	addBlock(currSet, cache->evictPolicy, &newBlock);
-	cache->totalCycles += (cache->blockBytes)/4 * 100; // make 100 a global var
-	//currSet->numBlocks++;
-	//	printf("current size of set: %u\n", currSet->numBlocks);
+	cache->totalCycles += (cache->blockBytes)/4 * 100; // make 100 a global var	
     }
     // loadFunc(cache, tag, index); 
   } else if(strcmp(action, "s") == 0) { //deals with stores 
     if (blockIdx >-1){ //store hits
-      // printf("STORE HIT\n");
+
       cache->storeHits = cache->storeHits + 1;
       storeHitFunc(currSet, cache, blockIdx);
       cache->totalCycles++;
     } else{ //store  misses
-      //printf("STORE MISSE\n");
+
       cache->storeMisses = cache->storeMisses + 1;
       storeMissFunc(currSet, cache, tag);
-	//cache->totalCycles++;
-    }
-    //   storeFunc(cache, tag, index);
-  }
 
-  //printf("This is the total number of cycles: %u\n\n", cache->totalCycles);
-  
+    }
+  }
 }
 
 unsigned getTag(unsigned address, unsigned numIndexBits, unsigned numOffsetBits) {
@@ -191,13 +144,6 @@ unsigned getTag(unsigned address, unsigned numIndexBits, unsigned numOffsetBits)
 }
 
 unsigned getIndex(unsigned address, unsigned numIndexBits) {
-  /*
-    unsigned address = 2726;//without offset
-    unsigned a = 32;
-    unsigned index = 2726 & (a-1);
-    unsigned tag = address - index >> 5; //5 = log2(a);
-
-  */
   
   if (numIndexBits == 0) {
     return 0;
@@ -226,34 +172,26 @@ int findBlock(Cache *cache, unsigned tag, unsigned index){
   return -1;
 }
 
-/*void loadFunc(Cache *cache, unsigned tag, unsigned index){
-  Set currSet = cache->sets.at(index);
-  if (findBlock(cache, tag, index)){
-    cache->totalCycles++; 
-  } else { //(currSet.numBlocks < cache->numBlocks){ //check if there are still space in set
-    Block newBlock;
-    newBlock.tag = tag;
-    updateTime(currSet, cache->evictPolicy, newBlock);
-    cache->totalCycles++;
-    //currSet.blocks.push_back(newBlock);
-  } 
-  }*/
-
 void addBlock(Set *currSet, char* tFormat, Block *currBlock){
-  //std::vector<Block>::iterator it;
+  
   currSet->numBlocks++;
   if (strcmp(tFormat, "lru") == 0){
     currSet->blocks.push_back(*currBlock); //last used is in the front
-  } else if (strcmp(tFormat, "fifo") == 0){ //oldest is the back 
-    currSet->blocks.insert(currSet->blocks.begin(), 0, *currBlock);
+  } else if (strcmp(tFormat, "fifo") == 0){ //oldest is the back
+    
+    currSet->blocks.insert(currSet->blocks.begin(), 1, *currBlock);
+    /*
+    printf("length: %lu\n tag: ", currSet->blocks.size());
+    for (int i = 0; i < currSet->blocks.size(); i++) {
+      printf("%u ", currSet->blocks.at(i).tag);
+    }
+    printf("\n");
+    */
   }
-
 } 
 
  void evictBlock(Set *currSet, char* tFormat, Cache* cache){
-   /* if (currSet->blocks.at(blockIdx).isDirty){
-     cache->totalCycles += (cache->blockBytes)/4 * 100; 
-     }*/
+   
    if (strcmp(tFormat, "lru") == 0){
      if (currSet->blocks.at(0).isDirty){ //check last one
        cache->totalCycles += (cache->blockBytes)/4 * 100;
@@ -264,7 +202,6 @@ void addBlock(Set *currSet, char* tFormat, Block *currBlock){
        cache->totalCycles += (cache->blockBytes)/4 * 100;
      }
      currSet->blocks.pop_back();
-     //currSet->blocks.insert(it, 0, *currBlock);
    }
    cache->totalCycles++;
    currSet->numBlocks--;
@@ -287,11 +224,8 @@ void updateTime(Set *currSet, Cache *cache, int blockIdx){
 void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
   if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
     cache->totalCycles += 100;
-    // currSet->blocks.at(blockIdx).isDirty = true;
-    //cache->totalCycles += (cache->blockBytes)/4 * 100;
   }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "no-write-allocate") == 0)){
     cache->totalCycles += 100;
-    // currSet->blocks.at(blockIdx).isDirty = true;
   }else {
     currSet->blocks.at(blockIdx).isDirty = true;
   }
@@ -306,32 +240,22 @@ void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
     if (currSet->numBlocks >= cache->numBlocks){ //if you can add more bl \
 						ocks
       evictBlock(currSet, cache->evictPolicy, cache);
-      //  printf("We need to evict a block\n");
     }
     addBlock(currSet, cache->evictPolicy, &newBlock);
     cache->totalCycles += 100;
     cache->totalCycles++;
-    // currSet->blocks.at(blockIdx).isDirty = true;
     cache->totalCycles += (cache->blockBytes)/4 * 100;
   }else if ((strcmp(cache->writePolicy, "write-back") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
-    if (currSet->numBlocks >= cache->numBlocks){ //if you can add more bl \
-                                                ocks
+    if (currSet->numBlocks >= cache->numBlocks){ //if you can add more blocks
       evictBlock(currSet, cache->evictPolicy, cache);
-      //  printf("We need to evict a block\n");
     }
     cache->totalCycles++;
     cache->totalCycles += (cache->blockBytes)/4 * 100;
     addBlock(currSet, cache->evictPolicy, &newBlock);
     
-    //currSet->blocks.at(blockIdx).isDirty = true;
   }else {
     cache->totalCycles += 100;
   }
-  //write-through + no-write-allocate
-
-  /*else {
-   //currSet->blocks.at(blockIdx).isDirty = true;
-   }*/
 }
 
 void printCache(Cache *cache){
