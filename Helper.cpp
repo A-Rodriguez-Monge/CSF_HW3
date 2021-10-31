@@ -29,6 +29,13 @@ int checkArgs(int argc, char **argv) {
       exit(1);
     }
 
+    int temp = atoi(argv[i]);
+
+    if ((temp & (temp-1)) != 0) {
+      cerr << "Invalid Input: Invalid Input: values must be powers of two\n";
+      exit(1);
+    }
+    
     if ((i == 3) && (atoi(argv[i]) < 4)) {
       cerr << "Invalid Input: number of bytes must be at least 4\n";
       exit(1);
@@ -118,7 +125,6 @@ void hitOrMiss(Cache* cache, char* action, char* address){
 
 	if (currSet->numBlocks >= cache->numBlocks){ //if you can add more blocks
 	  evictBlock(currSet, cache->evictPolicy, cache);
-	  //  printf("We need to evict a block\n");
 	}
 	addBlock(currSet, cache->evictPolicy, &newBlock);
 	cache->totalCycles += (cache->blockBytes)/4 * 100; // make 100 a global var	
@@ -180,13 +186,6 @@ void addBlock(Set *currSet, char* tFormat, Block *currBlock){
   } else if (strcmp(tFormat, "fifo") == 0){ //oldest is the back
     
     currSet->blocks.insert(currSet->blocks.begin(), 1, *currBlock);
-    /*
-    printf("length: %lu\n tag: ", currSet->blocks.size());
-    for (int i = 0; i < currSet->blocks.size(); i++) {
-      printf("%u ", currSet->blocks.at(i).tag);
-    }
-    printf("\n");
-    */
   }
 } 
 
@@ -212,12 +211,6 @@ void updateTime(Set *currSet, Cache *cache, int blockIdx){
   if (strcmp(cache->evictPolicy, "lru") == 0){
     currSet->blocks.erase(currSet->blocks.begin() + blockIdx);
     currSet->blocks.push_back(tempBlock);
-   } else if (strcmp(cache->evictPolicy, "fifo") == 0){ //the back was the first in
-    /* if (currSet->blocks.at(cache->numBlocks - 1).isDirty){ //check last one
-       cache->totalCycles += (cache->blockBytes)/4 * 100;
-     }
-     currSet->blocks.pop_back();*/
-     //currSet->blocks.insert(it, 0, *currBlock);
    }
 }
 
@@ -237,8 +230,7 @@ void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
   newBlock.tag = tag;
       
   if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
-    if (currSet->numBlocks >= cache->numBlocks){ //if you can add more bl \
-						ocks
+    if (currSet->numBlocks >= cache->numBlocks){ //if you can add more blocks
       evictBlock(currSet, cache->evictPolicy, cache);
     }
     addBlock(currSet, cache->evictPolicy, &newBlock);
@@ -267,4 +259,3 @@ void printCache(Cache *cache){
   std::cout<<"Store misses: "<<cache->storeMisses<<std::endl;
   std::cout<<"Total cycles: "<<cache->totalCycles<<std::endl;
 }
-  

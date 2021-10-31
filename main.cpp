@@ -23,8 +23,6 @@ using std::cin;
 */
 
 int main(int argc, char **argv) {
-  char action[]  = "";
-  char address[] = "";// = "0x00000000";
   int result = checkArgs(argc, argv);
 
   if (result != 0) {

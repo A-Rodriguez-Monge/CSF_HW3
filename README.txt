@@ -3,20 +3,24 @@
 Alejandro Rodriguez - arodri75
 Pamela Li 	    - pli36
 
+Pamela:
+- LRU
 
-//3.2 TODO:
+Alejandro:
+- main.cpp
+- argument validation
+- FIFO implementation
 
+Together:
+- data structures
 
-LRU:
-- write allocate/no-write-allocate
-- write through/write-back
+Which cache config is the most effective?
 
-Cache Struct:
-- array/vector of blocks
-- number of bytes **tentative
+set-associative caches : n sets of m blocks
 
-- number of loads
-  - number of hits/misses
-- number of stores
-  - number of hits/misses
--total cycles
+The most effective caches are those with the most hits and therefore, lowest cycles.
+In our case, this means a set-associative cache with write-allocate, write-back, fifo, and
+a small number of bytes in each block. By having a large number of sets and lower number of
+blocks in each set, we can more quickly reach a block holding an address. This is because
+we will be able to quickly find and access an address' set in  O(1) time and quickly find
+the address's block which is in O(m) time (m is number of blocks).
