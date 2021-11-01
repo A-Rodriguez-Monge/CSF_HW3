@@ -5,6 +5,9 @@ Pamela Li 	    - pli36
 
 Pamela:
 - LRU
+- store/loads
+- hits/miss
+-write-through/write-back/write-allocate/no-write-allocate
 
 Alejandro:
 - main.cpp

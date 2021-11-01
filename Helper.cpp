@@ -15,22 +15,28 @@ using std::find;
 using std::vector;
 
 int checkArgs(int argc, char **argv) {
-
   //check number of args
   if (argc != 7) {
     cerr << "Invalid Input: Incorrect Number of Arguments\n";
     exit(1);
   }
   
+  checkArgs1to4(argv);
+  checkArgs4to6(argv);
+  return 0;
+  
+}
+
+void checkArgs1to4(char **argv){
   //check args 1-4
   for (int i = 1; i < 4; i++) {
     if((isdigit(argv[i] != 0) || (atoi(argv[i]) <= 0))) {
       cerr << "Invalid Input: values must be positive\n";
       exit(1);
     }
-
+    
     int temp = atoi(argv[i]);
-
+    
     if ((temp & (temp-1)) != 0) {
       cerr << "Invalid Input: Invalid Input: values must be powers of two\n";
       exit(1);
@@ -41,8 +47,10 @@ int checkArgs(int argc, char **argv) {
       exit(1);
     }
   }
+}
 
-  //check args 4-6
+void checkArgs4to6(char **argv){
+   //check args 4-6
   if ((strcmp("write-allocate", argv[4]) != 0) && (strcmp("no-write-allocate", argv[4]) != 0)) {
       cerr << "Invalid Input: 4th argument is invalid\n";
       exit(1);
@@ -63,13 +71,10 @@ int checkArgs(int argc, char **argv) {
       exit(1);
     }
   }
-
-  return 0;
-
 }
 
-int readLine(Cache* cache){//, char *action, char* address){
-  
+
+int processLine(Cache* cache){
   std::string curLine;
   getline(cin, curLine);
 
@@ -80,8 +85,8 @@ int readLine(Cache* cache){//, char *action, char* address){
   char cur[curLine.length() + 1];
   strcpy(cur, curLine.c_str());
 
-  char *action = strtok(cur, " ");
-  char *address = strtok(NULL, " ");
+  char* action = strtok(cur, " ");
+  char* address = strtok(NULL, " ");
  
   hitOrMiss(cache, action, address);
   
@@ -89,7 +94,6 @@ int readLine(Cache* cache){//, char *action, char* address){
 }
 
 void hitOrMiss(Cache* cache, char* action, char* address){
- 
   if (strcmp(action, "l") == 0) {
     cache->totalLoads = cache->totalLoads + 1;
   } else if(strcmp(action, "s") == 0) {
@@ -97,51 +101,18 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   }
 
   unsigned convAddress = strtoul(address, NULL, 16);
-  unsigned numIndexBits = cache->numIndexBits;
-  unsigned numOffsetBits = cache->numOffsetBits;
-  
-  unsigned tag = getTag(convAddress, numIndexBits, numOffsetBits);
-  unsigned tagIndexAddress = convAddress >> numOffsetBits;
-
-  unsigned index = getIndex(tagIndexAddress, numIndexBits);
+  unsigned tag = getTag(convAddress, cache->numIndexBits, cache->numOffsetBits);
+  unsigned tagIndexAddress = convAddress >> cache->numOffsetBits;
+  unsigned index = getIndex(tagIndexAddress, cache->numIndexBits);
 
   //check if hit or miss
   int blockIdx = findBlock(cache, tag, index);
   Set *currSet = &cache->sets.at(index);
   if (strcmp(action, "l") == 0) { //deals with loads
-    if (blockIdx > -1){ //load hits
-  
-      cache->loadHits = cache->loadHits + 1;
-      cache->totalCycles++;
-      updateTime(currSet, cache, blockIdx);
-    } else{ //load misses
-  
-      cache->loadMisses = cache->loadMisses + 1; //if set is fully empty, need to populate set. need to access memory to load set
-        Block newBlock;
-	newBlock.tag = tag;
-
-	//may access memory which means total cycles is different
-	cache->totalCycles++;
-
-	if (currSet->numBlocks >= cache->numBlocks){ //if you can add more blocks
-	  evictBlock(currSet, cache->evictPolicy, cache);
-	}
-	addBlock(currSet, cache->evictPolicy, &newBlock);
-	cache->totalCycles += (cache->blockBytes)/4 * 100; // make 100 a global var	
-    }
-    // loadFunc(cache, tag, index); 
-  } else if(strcmp(action, "s") == 0) { //deals with stores 
-    if (blockIdx >-1){ //store hits
-
-      cache->storeHits = cache->storeHits + 1;
-      storeHitFunc(currSet, cache, blockIdx);
-      cache->totalCycles++;
-    } else{ //store  misses
-
-      cache->storeMisses = cache->storeMisses + 1;
-      storeMissFunc(currSet, cache, tag);
-
-    }
+    loadFunc(cache, blockIdx, currSet, tag);
+  }
+  else if(strcmp(action, "s") == 0) { //deals with stores
+    storeFunc(cache, blockIdx, currSet, tag);
   }
 }
 
@@ -179,7 +150,6 @@ int findBlock(Cache *cache, unsigned tag, unsigned index){
 }
 
 void addBlock(Set *currSet, char* tFormat, Block *currBlock){
-  
   currSet->numBlocks++;
   if (strcmp(tFormat, "lru") == 0){
     currSet->blocks.push_back(*currBlock); //last used is in the front
@@ -190,7 +160,6 @@ void addBlock(Set *currSet, char* tFormat, Block *currBlock){
 } 
 
  void evictBlock(Set *currSet, char* tFormat, Cache* cache){
-   
    if (strcmp(tFormat, "lru") == 0){
      if (currSet->blocks.at(0).isDirty){ //check last one
        cache->totalCycles += (cache->blockBytes)/4 * 100;
@@ -214,12 +183,46 @@ void updateTime(Set *currSet, Cache *cache, int blockIdx){
    }
 }
 
+void loadFunc(Cache* cache, int blockIdx, Set* currSet, unsigned tag){
+  if (blockIdx > -1){ //load hits
+    cache->loadHits = cache->loadHits + 1;
+    cache->totalCycles++;
+    updateTime(currSet, cache, blockIdx);
+  } else{ //load misses
+    
+    cache->loadMisses = cache->loadMisses + 1;
+    Block newBlock;
+    newBlock.tag = tag;
+    cache->totalCycles++;
+    
+    if (currSet->numBlocks >= cache->numBlocks){ //if you can add more blocks
+      evictBlock(currSet, cache->evictPolicy, cache);
+    }
+    addBlock(currSet, cache->evictPolicy, &newBlock);
+    cache->totalCycles += (cache->blockBytes)/4 * 100; // make 100 a global var
+  }
+}
+
+void storeFunc(Cache* cache, int blockIdx, Set* currSet, unsigned tag){
+  if (blockIdx >-1){ //store hits
+    
+    cache->storeHits = cache->storeHits + 1;
+    storeHitFunc(currSet, cache, blockIdx);
+    cache->totalCycles++;
+  } else{ //store  misses
+    
+    cache->storeMisses = cache->storeMisses + 1;
+    storeMissFunc(currSet, cache, tag);
+  }
+}
+
+
 void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
   if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "write-allocate") == 0)){
     cache->totalCycles += 100;
   }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "no-write-allocate") == 0)){
     cache->totalCycles += 100;
-  }else {
+  }else { // write-back and write-allocate
     currSet->blocks.at(blockIdx).isDirty = true;
   }
   updateTime(currSet, cache, blockIdx);
@@ -244,8 +247,7 @@ void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
     cache->totalCycles++;
     cache->totalCycles += (cache->blockBytes)/4 * 100;
     addBlock(currSet, cache->evictPolicy, &newBlock);
-    
-  }else {
+  }else { // write-back and write-allocate
     cache->totalCycles += 100;
   }
 }

@@ -9,8 +9,6 @@ using std::vector;
 
 typedef struct{
   unsigned tag;
-  //unsigned loadTime;
-  // unsigned accessTime;
   bool isDirty = false; 
 } Block;
 
@@ -39,7 +37,7 @@ typedef struct{
   char* evictPolicy;
 } Cache;
 
-int readLine(Cache* cache);//, char* action, char* address);
+int processLine(Cache* cache);
 
 void hitOrMiss(Cache* cache, char* action, char* address);
 
@@ -49,17 +47,21 @@ unsigned getIndex(unsigned Address, unsigned numIndexBits);
 
 int checkArgs(int argc, char **argv);
 
+void checkArgs1to4(char **argv);
+
+void checkArgs4to6(char **argv);
+
 int findBlock(Cache *cache, unsigned tag, unsigned index);
 
-void storeFunc(Cache *cache, unsigned tag, unsigned index);
-
-void loadFunc(Cache *cache, unsigned tag, unsigned index);
+void storeFunc(Cache* cache,int blockIdx, Set* currSet, unsigned tag);
 
 void addBlock(Set *currSet, char* tFormat, Block *currBlock); 
 
 void updateTime(Set *currSet, Cache *cache, int blockIdx);
 
 void evictBlock(Set *currSet, char* tFormat, Cache* cache);
+
+void loadFunc(Cache* cache,int blockIdx, Set* currSet, unsigned tag);
 
 void storeHitFunc(Set *currSet, Cache *cache, int blockIdx);
 
