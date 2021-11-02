@@ -94,6 +94,7 @@ int processLine(Cache* cache){
 }
 
 void hitOrMiss(Cache* cache, char* action, char* address){
+ 
   if (strcmp(action, "l") == 0) {
     cache->totalLoads = cache->totalLoads + 1;
   } else if(strcmp(action, "s") == 0) {
@@ -110,8 +111,7 @@ void hitOrMiss(Cache* cache, char* action, char* address){
   Set *currSet = &cache->sets.at(index);
   if (strcmp(action, "l") == 0) { //deals with loads
     loadFunc(cache, blockIdx, currSet, tag);
-  }
-  else if(strcmp(action, "s") == 0) { //deals with stores
+  } else if(strcmp(action, "s") == 0) { //deals with stores
     storeFunc(cache, blockIdx, currSet, tag);
   }
 }
@@ -150,6 +150,7 @@ int findBlock(Cache *cache, unsigned tag, unsigned index){
 }
 
 void addBlock(Set *currSet, char* tFormat, Block *currBlock){
+  
   currSet->numBlocks++;
   if (strcmp(tFormat, "lru") == 0){
     currSet->blocks.push_back(*currBlock); //last used is in the front
@@ -160,6 +161,7 @@ void addBlock(Set *currSet, char* tFormat, Block *currBlock){
 } 
 
  void evictBlock(Set *currSet, char* tFormat, Cache* cache){
+   
    if (strcmp(tFormat, "lru") == 0){
      if (currSet->blocks.at(0).isDirty){ //check last one
        cache->totalCycles += (cache->blockBytes)/4 * 100;
@@ -201,6 +203,7 @@ void loadFunc(Cache* cache, int blockIdx, Set* currSet, unsigned tag){
     addBlock(currSet, cache->evictPolicy, &newBlock);
     cache->totalCycles += (cache->blockBytes)/4 * 100; // make 100 a global var
   }
+  
 }
 
 void storeFunc(Cache* cache, int blockIdx, Set* currSet, unsigned tag){
@@ -222,7 +225,7 @@ void storeHitFunc(Set *currSet, Cache *cache, int blockIdx){
     cache->totalCycles += 100;
   }else if ((strcmp(cache->writePolicy, "write-through") == 0)&& (strcmp(cache->missPolicy, "no-write-allocate") == 0)){
     cache->totalCycles += 100;
-  }else { // write-back and write-allocate
+  }else {
     currSet->blocks.at(blockIdx).isDirty = true;
   }
   updateTime(currSet, cache, blockIdx);
@@ -247,7 +250,8 @@ void storeMissFunc(Set *currSet, Cache *cache, unsigned tag){
     cache->totalCycles++;
     cache->totalCycles += (cache->blockBytes)/4 * 100;
     addBlock(currSet, cache->evictPolicy, &newBlock);
-  }else { // write-back and write-allocate
+    
+  }else {
     cache->totalCycles += 100;
   }
 }
