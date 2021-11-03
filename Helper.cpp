@@ -81,13 +81,14 @@ int processLine(Cache* cache){
   if (curLine.empty()) {
     return EOF;
   }
-
-  char cur[curLine.length() + 1];
-  strcpy(cur, curLine.c_str());
-
+  
+  //char cur[curLine.length() + 1];
+  char* cur = (char*)curLine.c_str();
+  //  strcpy(cur, curLine.c_str());
+  
   char* action = strtok(cur, " ");
   char* address = strtok(NULL, " ");
- 
+  
   hitOrMiss(cache, action, address);
   
   return 0;
